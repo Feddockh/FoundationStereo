@@ -8,6 +8,7 @@
 
 
 import os,sys
+import time
 code_dir = os.path.dirname(os.path.realpath(__file__))
 sys.path.append(f'{code_dir}/../')
 from omegaconf import OmegaConf
@@ -75,11 +76,16 @@ if __name__=="__main__":
   padder = InputPadder(img0.shape, divis_by=32, force_square=False)
   img0, img1 = padder.pad(img0, img1)
 
+  start_time = time.time()
   with torch.cuda.amp.autocast(True):
     if not args.hiera:
       disp = model.forward(img0, img1, iters=args.valid_iters, test_mode=True)
     else:
       disp = model.run_hierachical(img0, img1, iters=args.valid_iters, test_mode=True, small_ratio=0.5)
+  end_time = time.time()
+  inference_time = end_time - start_time
+  logging.info(f"Disparity map inference time: {inference_time:.4f} seconds ({1.0/inference_time:.2f} FPS)")
+  
   disp = padder.unpad(disp.float())
   disp = disp.data.cpu().numpy().reshape(H,W)
   vis = vis_disparity(disp)

@@ -19,7 +19,7 @@ import open3d as o3d
 import torch
 import yaml
 import time
-from onnx_tensorrt import tensorrt_engine
+import tensorrt_engine
 import tensorrt as trt
 
 import sys

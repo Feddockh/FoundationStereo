@@ -55,7 +55,7 @@ if __name__ == '__main__':
         model,
         (left_img, right_img),
         args.save_path,
-        opset_version=16,
+        opset_version=17,
         input_names = ['left', 'right'],
         output_names = ['disp'],
         dynamic_axes={
