@@ -1,4 +1,5 @@
 # SPDX-License-Identifier: Apache-2.0
+# Credit to https://github.com/onnx/onnx-tensorrt/blob/10.13-GA/onnx_tensorrt/tensorrt_engine.py
 
 import tensorrt as trt
 import pycuda.driver

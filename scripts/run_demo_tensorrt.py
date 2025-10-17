@@ -73,21 +73,28 @@ def inference(left_img_path: str, right_img_path: str, model, args: argparse.Nam
     vis = vis_disparity(left_disp)
     vis = np.concatenate([input_left, vis], axis=1)
     imageio.imwrite(os.path.join(args.save_path, 'visual', left_img_path.split('/')[-1]), vis)
+    logging.info(f"Visualization saved to {os.path.join(args.save_path, 'visual', left_img_path.split('/')[-1])}")
 
     if args.pc:
         save_path = left_img_path.split('/')[-1].split('.')[0] + '.ply'
-        baseline = 193.001/1e3
-        doffs = 0
-        K = np.array([1998.842, 0, 588.364,
-                    0, 1998.842, 505.864,
-                    0,0,1]).reshape(3,3)
-        depth = K[0,0]*baseline/(left_disp + doffs)
+        
+        # Load K matrix and baseline from intrinsic file
+        with open(args.intrinsic_file, 'r') as f:
+            lines = f.readlines()
+            K = np.array(list(map(float, lines[0].rstrip().split()))).astype(np.float32).reshape(3,3)
+            baseline = float(lines[1])
+        
+        # Apply scale to K matrix if images were scaled
+        K[:2] *= args.scale
+        
+        depth = K[0,0]*baseline/left_disp
         xyz_map = depth2xyzmap(depth, K)
         pcd = toOpen3dCloud(xyz_map.reshape(-1,3), input_left.reshape(-1,3))
         keep_mask = (np.asarray(pcd.points)[:,2]>0) & (np.asarray(pcd.points)[:,2]<=args.z_far)
         keep_ids = np.arange(len(np.asarray(pcd.points)))[keep_mask]
         pcd = pcd.select_by_index(keep_ids)
         o3d.io.write_point_cloud(os.path.join(args.save_path, 'cloud', save_path), pcd)
+        logging.info(f"Point cloud saved to {os.path.join(args.save_path, 'cloud', save_path)}")
 
 
 
@@ -98,6 +105,7 @@ def parse_args() -> omegaconf.OmegaConf:
     # File options
     parser.add_argument('--left_img', '-l', required=True, help='Path to left image.')
     parser.add_argument('--right_img', '-r', required=True, help='Path to right image.')
+    parser.add_argument('--intrinsic_file', default=f'{code_dir}/../assets/K.txt', type=str, help='camera intrinsic matrix and baseline file')
     parser.add_argument('--save_path', '-s', default=f'{code_dir}/../output', help='Path to save results.')
     parser.add_argument('--pretrained', default='2024-12-13-23-51-11/model_best_bp2.pth', help='Path to pretrained model')
 
@@ -106,6 +114,7 @@ def parse_args() -> omegaconf.OmegaConf:
     parser.add_argument('--width', type=int, default=672, help='Image width')
     parser.add_argument('--pc', action='store_true', help='Save point cloud')
     parser.add_argument('--z_far', default=100, type=float, help='max depth to clip in point cloud')
+    parser.add_argument('--scale', default=1.0, type=float, help='scale factor applied to images (K matrix will be adjusted accordingly)')
     args = parser.parse_args()
     return args
 

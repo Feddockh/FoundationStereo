@@ -1,3 +1,8 @@
+"""
+image sizes must be divisible by 224 for ONNX export (with downsampling)
+XFORMERS_DISABLED=1 python scripts/make_onnx.py --save_path ./pretrained_models/foundation_stereo_firefly.onnx --ckpt_dir ./pretrained_models/23-51-11/model_best_bp2-001.pth --height 672 --width 896 --valid_iters 20
+"""
+
 import warnings, argparse, logging, os, sys
 code_dir = os.path.dirname(os.path.abspath(__file__))
 sys.path.append(f'{code_dir}/../')

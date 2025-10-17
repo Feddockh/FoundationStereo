@@ -8,7 +8,7 @@ This document summarizes the modifications made to the FoundationStereo submodul
 - **Change**: Updated ONNX opset version from 16 to 17
 - **Reason**: Resolved LayerNorm compatibility issues during ONNX to TensorRT conversion
 
-### 2. TensorRT Engine Builder (`build_engine_minimal.py`)
+### 2. TensorRT Engine Builder (`make_tensorrt.py`)
 - **Purpose**: Creates TensorRT engine files from ONNX models
 - **Reason**: Replaces command-line `trtexec` tool which is unavailable in pip-based TensorRT installations (only included in Debian packages)
 
@@ -31,3 +31,4 @@ pip install pycuda==2025.1.2
 
 - These modifications enable TensorRT inference without requiring the full NVIDIA TensorRT Debian package installation
 - All changes maintain compatibility with the original model architecture and inference pipeline
+- Please read this on installing TensorRT https://docs.nvidia.com/deeplearning/tensorrt/latest/installing-tensorrt/installing.html
